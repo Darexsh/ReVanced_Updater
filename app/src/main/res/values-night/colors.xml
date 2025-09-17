@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="boxStrokeColor">#808080</color>
+    <color name="btnTextColor">#FFFFFF</color>
+    <color name="okButtonColor">#81C784</color>
+    <color name="cancelButtonColor">#E57373</color>
+</resources>

@@ -1,0 +1,33 @@
+<resources>
+    <string name="app_name">ReVanced Updater</string>
+    <string name="ok">Tamam</string>
+    <string name="cancel">İptal</string>
+    <string name="error_title">Hata</string>
+    <string name="download_wait">Lütfen bekleyin...</string>
+    <string name="check_updates">Güncellemeleri kontrol et</string>
+    <string name="select_apps">Uygulamaları seçin</string>
+    <string name="delete_yes">Evet</string>
+    <string name="delete_no">Hayır</string>
+    <string name="installed_version">Yüklü sürüm: %1$s</string>
+    <string name="newest_version">En yeni sürüm: %1$s</string>
+    <string name="update_available">%1$s için yeni bir güncelleme mevcut. Güncellemek ister misiniz?</string>
+    <string name="already_latest">%1$s zaten güncel</string>
+    <string name="not_installed">%1$s yüklü değil. Yüklemek ister misiniz?</string>
+    <string name="no_update_yet">Henüz güncelleme yapılmadı. Lütfen önce güncellemeleri kontrol edin.</string>
+    <string name="no_new_version">%1$s için yeni sürüm yok. Lütfen güncellemeleri bekleyin.</string>
+    <string name="download_error">İndirme başarısız: %1$s</string>
+    <string name="old_apks_found">Eski APK dosyaları bulundu. Silmek ister misiniz?</string>
+    <string name="download_title">İndiriliyor: %1$s</string>
+    <string name="language_selection_title">Dil seçin</string>
+    <string name="german">Almanca</string>
+    <string name="english">İngilizce</string>
+    <string name="russian">Rusça</string>
+    <string name="spanish">İspanyolca</string>
+    <string name="french">Fransızca</string>
+    <string name="italian">İtalyanca</string>
+    <string name="turkish">Türkçe</string>
+    <string name="polish">Lehçe</string>
+    <string name="chinese">Çince</string>
+    <string name="change_language">Dili değiştir</string>
+    <string name="unknown">bilinmiyor</string>
+</resources>

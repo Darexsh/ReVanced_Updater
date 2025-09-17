@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="16dp"
+    android:fitsSystemWindows="true">
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <LinearLayout
+            android:id="@+id/appContainer"
+            android:orientation="vertical"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"/>
+    </ScrollView>
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnCheckUpdates"
+        android:layout_width="300dp"
+        android:layout_height="wrap_content"
+        android:text="@string/check_updates"
+        android:textColor="@color/btnTextColor"
+        android:layout_gravity="center"
+        android:textAllCaps="false"
+        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+        app:cornerRadius="16dp"
+        app:strokeColor="@color/boxStrokeColor"/>
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnSelectApps"
+        android:layout_width="300dp"
+        android:layout_height="wrap_content"
+        android:text="@string/select_apps"
+        android:textColor="@color/btnTextColor"
+        android:layout_gravity="center"
+        android:textAllCaps="false"
+        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+        app:cornerRadius="16dp"
+        app:strokeColor="@color/boxStrokeColor"/>
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnChangeLanguage"
+        android:layout_width="300dp"
+        android:layout_height="wrap_content"
+        android:text="@string/change_language"
+        android:textColor="@color/btnTextColor"
+        android:layout_gravity="center"
+        android:textAllCaps="false"
+        android:layout_marginBottom="8dp"
+        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+        app:cornerRadius="16dp"
+        app:strokeColor="@color/boxStrokeColor"/>
+
+</LinearLayout>

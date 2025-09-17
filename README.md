@@ -1,3 +1,112 @@
-# ReVanced_Updater
+🚀 ReVanced Updater
+===================
 
-TODO!!
+**ReVanced Updater** is an Android application designed to help users easily check for updates and install the latest versions of ReVanced apps, including YouTube ReVanced, YouTube Music ReVanced, Google Photos ReVanced, TikTok ReVanced, Spotify ReVanced, and microG. The app provides a simple interface, multi-language support, and automated APK downloads.
+
+* * *
+
+✨ Features
+----------
+
+* 🔄 **Check for updates**: Quickly see the installed and latest version of supported ReVanced apps.
+    
+* 🌐 **Multi-language support**: Available in German, English, Russian, Spanish, French, Italian, Turkish, Polish, and Chinese.
+    
+* ✅ **Select apps**: Choose which apps to display and manage.
+    
+* 📥 **Download & install APKs**: Automatically download APK files and guide you through installation.
+    
+* 🗑️ **Manage old APKs**: Detect and optionally delete outdated APK files.
+    
+* 🎨 **Color-coded version status**: Green indicates the app is up-to-date, red indicates an update is available.
+    
+
+* * *
+
+📱 Supported Apps
+-----------------
+
+| App Name | Package Name |
+| --- | --- |
+| YouTube ReVanced | `app.revanced.android.youtube` |
+| YouTube Music ReVanced | `app.revanced.android.apps.youtube.music` |
+| Google Photos ReVanced | `app.revanced.android.photos` |
+| TikTok ReVanced | `com.zhiliaoapp.musically` |
+| Spotify ReVanced | `com.spotify.music` |
+| microG | `app.revanced.android.gms` |
+
+* * *
+
+📥 Installation
+---------------
+
+1. Download the latest APK for the ReVanced Updater from the official repository or release page.
+    
+2. 🔒 Enable installation from unknown sources if prompted (required on Android 8.0+).
+    
+3. 📂 Open the app and select which ReVanced apps you want to manage.
+    
+4. 🔍 Tap **Check Updates** to see the latest available versions.
+    
+5. ⬆️ Tap on an app to update or install it.
+    
+
+* * *
+
+📝 Usage
+--------
+
+1. 🔍 **Check Updates**: Displays installed versions and fetches the newest versions from GitHub.
+    
+2. ✅ **Select Apps**: Choose which ReVanced apps you want to display in the main interface.
+    
+3. 🌐 **Change Language**: Switch between supported languages using the **Change Language** button.
+    
+4. ⬆️ **Install Updates**: Tap an app box to see update status and start the APK installation if a new version is available.
+    
+
+The app automatically handles downloading APK files and launching the installer once the download completes.
+
+* * *
+
+🔑 Permissions
+--------------
+
+* 🌐 **Internet**: Required to fetch the latest release information from GitHub.
+    
+* 💾 **Storage**: Required to save downloaded APK files temporarily.
+    
+* 🔓 **Install Unknown Apps**: Required to install APKs from the app.
+    
+
+* * *
+
+⚙️ Technical Details
+--------------------
+
+* 📦 Uses GitHub API to fetch the latest releases for supported apps.
+    
+* 🤖 Supports Android 7.0 (Nougat) and above.
+    
+* 💾 Uses `SharedPreferences` to store selected apps and language settings.
+    
+* 🌍 Automatically handles multiple languages and locale changes at runtime.
+    
+* 📊 Provides progress bars for APK downloads and error handling with alerts.
+    
+
+* * *
+
+📝 License
+----------
+
+This project is provided as-is. Check the respective ReVanced apps’ licenses for their terms of use.
+
+* * *
+
+📞 Contact / Support
+--------------------
+
+For issues, feature requests, or contributions, please refer to the [GitHub repository](https://github.com/Darexsh/ReVanced_Updater) (replace with actual repo link).
+
+* * *

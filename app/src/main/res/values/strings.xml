@@ -1,0 +1,33 @@
+<resources>
+    <string name="app_name">ReVanced Updater</string>
+    <string name="ok">OK</string>
+    <string name="cancel">Abbrechen</string>
+    <string name="error_title">Fehler</string>
+    <string name="download_wait">Bitte warten Sie...</string>
+    <string name="check_updates">Nach Updates suchen</string>
+    <string name="select_apps">Apps auswählen</string>
+    <string name="delete_yes">Ja</string>
+    <string name="delete_no">Nein</string>
+    <string name="installed_version">Installierte Version: %1$s</string>
+    <string name="newest_version">Neueste Version: %1$s</string>
+    <string name="update_available">Ein neues Update für %1$s ist verfügbar. Möchten Sie aktualisieren?</string>
+    <string name="already_latest">%1$s ist bereits auf dem neuesten Stand</string>
+    <string name="not_installed">%1$s ist nicht installiert. Möchten Sie es installieren?</string>
+    <string name="no_update_yet">Es wurde noch kein Update durchgeführt. Bitte suchen Sie zuerst nach Updates.</string>
+    <string name="no_new_version">Keine neue Version für %1$s verfügbar. Bitte warten Sie auf Updates.</string>
+    <string name="download_error">Download fehlgeschlagen: %1$s</string>
+    <string name="old_apks_found">Alte APK-Dateien gefunden. Möchten Sie diese löschen?</string>
+    <string name="download_title">Download: %1$s</string>
+    <string name="language_selection_title">Sprache auswählen</string>
+    <string name="german">Deutsch</string>
+    <string name="english">Englisch</string>
+    <string name="russian">Russisch</string>
+    <string name="spanish">Spanisch</string>
+    <string name="french">Französisch</string>
+    <string name="italian">Italienisch</string>
+    <string name="turkish">Türkisch</string>
+    <string name="polish">Polnisch</string>
+    <string name="chinese">Chinesisch</string>
+    <string name="change_language">Sprache ändern</string>
+    <string name="unknown">unbekannt</string>
+</resources>

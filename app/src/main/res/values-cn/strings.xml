@@ -1,0 +1,33 @@
+<resources>
+    <string name="app_name">ReVanced Updater</string>
+    <string name="ok">确定</string>
+    <string name="cancel">取消</string>
+    <string name="error_title">错误</string>
+    <string name="download_wait">请稍候...</string>
+    <string name="check_updates">检查更新</string>
+    <string name="select_apps">选择应用程序</string>
+    <string name="delete_yes">是</string>
+    <string name="delete_no">否</string>
+    <string name="installed_version">已安装版本：%1$s</string>
+    <string name="newest_version">最新版本：%1$s</string>
+    <string name="update_available">%1$s 有可用的新更新。您想更新吗？</string>
+    <string name="already_latest">%1$s 已经是最新版本</string>
+    <string name="not_installed">%1$s 尚未安装。您想安装吗？</string>
+    <string name="no_update_yet">尚未进行更新。请先检查更新。</string>
+    <string name="no_new_version">%1$s 没有新版本。请等待更新。</string>
+    <string name="download_error">下载失败：%1$s</string>
+    <string name="old_apks_found">发现旧的 APK 文件。您想删除它们吗？</string>
+    <string name="download_title">下载中：%1$s</string>
+    <string name="language_selection_title">选择语言</string>
+    <string name="german">德语</string>
+    <string name="english">英语</string>
+    <string name="russian">俄语</string>
+    <string name="spanish">西班牙语</string>
+    <string name="french">法语</string>
+    <string name="italian">意大利语</string>
+    <string name="turkish">土耳其语</string>
+    <string name="polish">波兰语</string>
+    <string name="chinese">中文</string>
+    <string name="change_language">更改语言</string>
+    <string name="unknown">未知</string>
+</resources>
