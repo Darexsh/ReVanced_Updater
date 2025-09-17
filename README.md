@@ -1,3 +1,5 @@
+* * *
+
 🚀 ReVanced Updater
 ===================
 
@@ -26,14 +28,14 @@
 📱 Supported Apps
 -----------------
 
-| App Name | Package Name |
-| --- | --- |
-| YouTube ReVanced | `app.revanced.android.youtube` |
-| YouTube Music ReVanced | `app.revanced.android.apps.youtube.music` |
-| Google Photos ReVanced | `app.revanced.android.photos` |
-| TikTok ReVanced | `com.zhiliaoapp.musically` |
-| Spotify ReVanced | `com.spotify.music` |
-| microG | `app.revanced.android.gms` |
+| App Name | Package Name | Download Source |
+| --- | --- | --- |
+| YouTube ReVanced | `app.revanced.android.youtube` | [j-hc/revanced-magisk-module](https://github.com/j-hc/revanced-magisk-module/releases) |
+| YouTube Music ReVanced | `app.revanced.android.apps.youtube.music` | [j-hc/revanced-magisk-module](https://github.com/j-hc/revanced-magisk-module/releases) |
+| Google Photos ReVanced | `app.revanced.android.photos` | [j-hc/revanced-magisk-module](https://github.com/j-hc/revanced-magisk-module/releases) |
+| TikTok ReVanced | `com.zhiliaoapp.musically` | [j-hc/revanced-magisk-module](https://github.com/j-hc/revanced-magisk-module/releases) |
+| Spotify ReVanced | `com.spotify.music` | [j-hc/revanced-magisk-module](https://github.com/j-hc/revanced-magisk-module/releases) |
+| microG | `app.revanced.android.gms` | [ReVanced/GmsCore](https://github.com/ReVanced/GmsCore) |
 
 * * *
 
@@ -107,6 +109,6 @@ This project is provided as-is. Check the respective ReVanced apps’ licenses f
 📞 Contact / Support
 --------------------
 
-For issues, feature requests, or contributions, please refer to the [GitHub repository](https://github.com/Darexsh/ReVanced_Updater) (replace with actual repo link).
+For issues, feature requests, or contributions, please refer to the [GitHub repository](https://github.com/Darexsh/ReVanced_Updater).
 
 * * *
