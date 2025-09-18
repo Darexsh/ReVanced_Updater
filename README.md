@@ -6,7 +6,7 @@
 ============================
 
 **An Android app to check, download, and install the latest ReVanced updates**  
-🖥️🎨🌌✨🌈
+⚡📥📱🌍✅
 
 ![Projekt-Status](https://img.shields.io/badge/Status-Aktiv-brightgreen) ![Lizenz](https://img.shields.io/badge/Lizenz-MIT-blue) ![Version](https://img.shields.io/badge/Version-1.0-orange)
 
