@@ -20,7 +20,7 @@
 
 | Name | GitHub | Role | Contact | Contributions |
 | --- | --- | --- | --- | --- |
-| **[Daniel Sichler aka Darexsh](https://github.com/Darexsh)** | [Link](https://github.com/Darexsh?tab=repositories) | Android App Development 📱🛠️, UI/UX Design 🎨 | 📧 [E-Mail](mailto:sichler.daniel@gmail.com) | Concept, Update Checking & Download Logic, Multi-language Support, UI Design |
+| **[Darexsh by Daniel Sichler](https://github.com/Darexsh)** | [Link](https://github.com/Darexsh?tab=repositories) | Android App Development 📱🛠️, UI/UX Design 🎨 | 📧 [E-Mail](mailto:sichler.daniel@gmail.com) | Concept, Update Checking & Download Logic, Multi-language Support, UI Design |
 
 * * *
 
