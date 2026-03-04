@@ -7,8 +7,6 @@ import android.content.res.ColorStateList;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
-import android.graphics.Color;
-import android.graphics.drawable.ColorDrawable;
 import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.Build;
@@ -23,7 +21,6 @@ import android.text.style.StyleSpan;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 import android.util.SparseIntArray;
 import android.widget.RadioGroup;
 import android.widget.ScrollView;
@@ -31,13 +28,8 @@ import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
-import android.widget.ArrayAdapter;
-import android.widget.AdapterView;
-import android.widget.Spinner;
 import android.widget.TextView;
 import android.app.AlertDialog;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.core.content.ContextCompat;
@@ -45,25 +37,17 @@ import androidx.core.content.FileProvider;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.checkbox.MaterialCheckBox;
 import com.google.android.material.radiobutton.MaterialRadioButton;
-import org.json.JSONArray;
-import org.json.JSONObject;
 import java.io.BufferedInputStream;
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.HashMap;
-import java.util.LinkedHashSet;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 // Main activity of the ReVanced Updater application
 public class MainActivity extends AppCompatActivity {
@@ -74,9 +58,7 @@ public class MainActivity extends AppCompatActivity {
     private final Map<String, LatestFetchState> latestFetchStates = new HashMap<>(); // Keeps fetched versions/URLs across UI refreshes
     private String pendingReinstallPackageName;
     private String pendingReinstallDisplayName;
-    private String emulatedBrand;
-    private String emulatedArch;
-    private TextView activeDeveloperDiagnosticsView;
+    private DeveloperModeManager developerModeManager;
 
     private final AppConfig[] appConfigs = {
             new AppConfig("YouTube Morphe", "app.morphe.android.youtube"),
@@ -95,8 +77,6 @@ public class MainActivity extends AppCompatActivity {
     private static final String KEY_SELECTED_APPS = "selectedApps";
     private static final String KEY_SELECTED_LANGUAGE = "selectedLanguage"; // 0 = German, 1 = English, 2 = Russian, 3 = Spanish, 4 = French, 5 = Italian, 6 = Turkish, 7 = Polish, 8 = Chinese
     private static final String KEY_INITIAL_SELECTION_DONE = "initialSelectionDone";
-    private static final String KEY_DEV_EMULATED_BRAND = "devEmulatedBrand";
-    private static final String KEY_DEV_EMULATED_ARCH = "devEmulatedArch";
 
     // Attach base context to handle language changes
     @Override
@@ -138,8 +118,7 @@ public class MainActivity extends AppCompatActivity {
         // Load selected apps from SharedPreferences
         selectedApps = new boolean[appConfigs.length];
         SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
-        emulatedBrand = prefs.getString(KEY_DEV_EMULATED_BRAND, "auto");
-        emulatedArch = prefs.getString(KEY_DEV_EMULATED_ARCH, "auto");
+        developerModeManager = new DeveloperModeManager(this, PREFS_NAME);
         String saved = prefs.getString(KEY_SELECTED_APPS, null);
         if (saved != null) {
             String[] parts = saved.split(",");
@@ -175,7 +154,7 @@ public class MainActivity extends AppCompatActivity {
         settingsInfoButton.setOnClickListener(v -> showAppInfoDialog());
         View headerBox = findViewById(R.id.headerBox);
         headerBox.setOnLongClickListener(v -> {
-            showDeveloperModeDialog();
+            developerModeManager.showDialog(appConfigs, appInfoBoxes, latestFetchStates, this::checkUpdatesForAllApps);
             return true;
         });
 
@@ -251,7 +230,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         dialog.show();
-        setupFancyDialogWindow(dialog);
+        FancyDialogs.styleWindow(dialog, 0.86f);
     }
 
     private void persistSelectedApps() {
@@ -337,7 +316,7 @@ public class MainActivity extends AppCompatActivity {
         btnDialogNegative.setOnClickListener(v -> dialog.dismiss());
 
         dialog.show();
-        setupFancyDialogWindow(dialog);
+        FancyDialogs.styleWindow(dialog, 0.86f);
     }
 
     // Check for old APKs on resume and refresh the app list
@@ -354,7 +333,7 @@ public class MainActivity extends AppCompatActivity {
 
         // Prompt user to delete old APKs if found
         if (apkFiles != null && apkFiles.length > 0) {
-            showFancyMessageDialog(
+            FancyDialogs.showMessageDialog(MainActivity.this, 
                     getString(R.string.app_name),
                     getString(R.string.old_apks_found),
                     R.string.delete_yes,
@@ -431,9 +410,9 @@ public class MainActivity extends AppCompatActivity {
             // Show appropriate dialog based on installation and version status
             if (infoBox.installedVersion == null) {
                 if (infoBox.apkUrl == null) {
-                    showFancyMessageDialog(displayName, getString(R.string.no_update_yet));
+                    FancyDialogs.showMessageDialog(MainActivity.this, displayName, getString(R.string.no_update_yet));
                 } else {
-                    showFancyMessageDialog(
+                    FancyDialogs.showMessageDialog(MainActivity.this, 
                             displayName,
                             getString(R.string.not_installed, displayName),
                             R.string.ok,
@@ -444,16 +423,16 @@ public class MainActivity extends AppCompatActivity {
                     );
                 }
             } else if ("-".equals(infoBox.newestVersion)) {
-                showFancyMessageDialog(displayName, getString(R.string.no_update_yet));
+                FancyDialogs.showMessageDialog(MainActivity.this, displayName, getString(R.string.no_update_yet));
             } else if (Objects.equals(infoBox.newestVersion, getString(R.string.unknown))) {
-                showFancyMessageDialog(
+                FancyDialogs.showMessageDialog(MainActivity.this, 
                         displayName,
                         infoBox.fetchError != null
                                 ? infoBox.fetchError
                                 : getString(R.string.no_new_version, displayName)
                 );
             } else if (VersionUtils.compareVersions(infoBox.newestVersion, infoBox.installedVersion) > 0) {
-                showFancyMessageDialog(
+                FancyDialogs.showMessageDialog(MainActivity.this, 
                         displayName,
                         getString(R.string.update_available, displayName),
                         R.string.ok,
@@ -463,7 +442,7 @@ public class MainActivity extends AppCompatActivity {
                         true
                 );
             } else {
-                showFancyMessageDialog(displayName, getString(R.string.already_latest, displayName));
+                FancyDialogs.showMessageDialog(MainActivity.this, displayName, getString(R.string.already_latest, displayName));
             }
         });
 
@@ -517,7 +496,7 @@ public class MainActivity extends AppCompatActivity {
 
             btnActionCancel.setOnClickListener(btn -> appActionsDialog.dismiss());
             appActionsDialog.show();
-            setupFancyDialogWindow(appActionsDialog);
+            FancyDialogs.styleWindow(appActionsDialog, 0.86f);
             return true;
         });
     }
@@ -535,14 +514,14 @@ public class MainActivity extends AppCompatActivity {
 
         String apkUrl = infoBox.apkUrl;
         if (apkUrl == null || apkUrl.isEmpty()) {
-            showFancyMessageDialog(getString(R.string.error_title), getString(R.string.download_error, "No download URL found."));
+            FancyDialogs.showMessageDialog(MainActivity.this, getString(R.string.error_title), getString(R.string.download_error, "No download URL found."));
             return;
         }
 
         String fileName = apkUrl.substring(apkUrl.lastIndexOf('/') + 1);
         File apkDir = getExternalFilesDir(null);
         if (apkDir == null) {
-            showFancyMessageDialog(getString(R.string.error_title), getString(R.string.download_error, "Storage unavailable."));
+            FancyDialogs.showMessageDialog(MainActivity.this, getString(R.string.error_title), getString(R.string.download_error, "Storage unavailable."));
             return;
         }
         File apkFile = new File(apkDir, fileName);
@@ -562,7 +541,7 @@ public class MainActivity extends AppCompatActivity {
                 .create();
         dialog.setCancelable(false);
         dialog.show();
-        setupFancyDialogWindow(dialog);
+        FancyDialogs.styleWindow(dialog, 0.86f);
 
         // Download APK in a separate thread
         new Thread(() -> {
@@ -619,7 +598,7 @@ public class MainActivity extends AppCompatActivity {
                 e.printStackTrace();
                 new Handler(Looper.getMainLooper()).post(() -> {
                     dialog.dismiss();
-                    showFancyMessageDialog(getString(R.string.error_title), getString(R.string.download_error, e.getMessage()));
+                    FancyDialogs.showMessageDialog(MainActivity.this, getString(R.string.error_title), getString(R.string.download_error, e.getMessage()));
                 });
             } finally {
                 if (connection != null) {
@@ -636,158 +615,17 @@ public class MainActivity extends AppCompatActivity {
 
     private void fetchNewestVersion(String appName, AppInfoBox infoBox, Runnable onComplete) {
         new Thread(() -> {
-            String newestVersion = getString(R.string.unknown);
-            String downloadUrl = null;
-            String fetchError = null;
-            HttpURLConnection connection = null;
             String[] preferredAbis = getPreferredApkAbis();
             boolean preferMicrogHuaweiBuild = shouldPreferMicrogHuaweiBuild();
-
-            try {
-                connection = getHttpURLConnection(appName);
-
-                int responseCode = connection.getResponseCode();
-
-                if (responseCode == 200) {
-                    StringBuilder sb = new StringBuilder();
-                    try (BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()))) {
-                        String line;
-                        while ((line = reader.readLine()) != null) sb.append(line);
-                    }
-
-                    JSONArray releases = new JSONArray(sb.toString());
-
-                    outer:
-                    for (int i = 0; i < releases.length(); i++) {
-                        JSONObject release = releases.getJSONObject(i);
-                        JSONArray assets = release.getJSONArray("assets");
-
-                        if ("Youtube Music ReVanced".equals(appName)) {
-                            ApkMatch match = findBestAbiAssetInRelease(
-                                    assets,
-                                    "music-revanced",
-                                    Pattern.compile("music-revanced-v([0-9.]+)-(arm64-v8a|arm-v7a)\\.apk"),
-                                    preferredAbis
-                            );
-                            if (match != null) {
-                                newestVersion = match.version;
-                                downloadUrl = match.downloadUrl;
-                                break;
-                            }
-                            continue;
-                        }
-
-                        if ("Youtube Music Morphe".equals(appName)) {
-                            ApkMatch match = findBestAbiAssetInRelease(
-                                    assets,
-                                    "music-morphe",
-                                    Pattern.compile("music-morphe-v([0-9.]+)-(arm64-v8a|arm-v7a)\\.apk"),
-                                    preferredAbis
-                            );
-                            if (match != null) {
-                                newestVersion = match.version;
-                                downloadUrl = match.downloadUrl;
-                                break;
-                            }
-                            continue;
-                        }
-
-                        if ("Google Photos ReVanced".equals(appName)) {
-                            ApkMatch match = findBestAbiAssetInRelease(
-                                    assets,
-                                    "googlephotos-revanced",
-                                    Pattern.compile("googlephotos-revanced-v([0-9.]+)-(arm64-v8a|arm-v7a)\\.apk"),
-                                    preferredAbis
-                            );
-                            if (match != null) {
-                                newestVersion = match.version;
-                                downloadUrl = match.downloadUrl;
-                                break;
-                            }
-                            continue;
-                        }
-
-                        if ("microG".equals(appName)) {
-                            String microgUrl = findBestMicrogAssetInRelease(assets, preferMicrogHuaweiBuild);
-                            if (microgUrl != null) {
-                                String tag = release.getString("tag_name");
-                                newestVersion = tag.startsWith("v") ? tag.substring(1) : tag;
-                                downloadUrl = microgUrl;
-                                break;
-                            }
-                            continue;
-                        }
-
-                        for (int j = 0; j < assets.length(); j++) {
-                            JSONObject asset = assets.getJSONObject(j);
-                            String name = asset.getString("name").toLowerCase();
-                            Pattern pattern = null;
-
-                            switch (appName) {
-                                case "YouTube ReVanced":
-                                    if (name.startsWith("youtube-revanced") && name.endsWith("-all.apk"))
-                                        pattern = Pattern.compile("youtube-revanced-v([0-9.]+)-all\\.apk");
-                                    break;
-                                case "Youtube Music ReVanced":
-                                case "Google Photos ReVanced":
-                                    break;
-                                case "TikTok ReVanced":
-                                    if (name.startsWith("tiktok-revanced") && name.endsWith("-all.apk"))
-                                        pattern = Pattern.compile("tiktok-revanced-v([0-9.]+)-all\\.apk");
-                                    break;
-                                case "Spotify ReVanced":
-                                    if (name.startsWith("spotify-revanced") && name.endsWith("-all.apk"))
-                                        pattern = Pattern.compile("spotify-revanced-v([0-9.]+)-all\\.apk");
-                                    break;
-                                case "YouTube Morphe":
-                                    if (name.startsWith("youtube-morphe") && name.endsWith("-all.apk"))
-                                        pattern = Pattern.compile("youtube-morphe-v([0-9.]+)-all\\.apk");
-                                    break;
-                                case "Youtube Music Morphe":
-                                    break;
-                                case "Reddit Morphe":
-                                    if (name.startsWith("reddit-morphe") && name.endsWith("-all.apk"))
-                                        pattern = Pattern.compile("reddit-morphe-v([0-9.]+)-all\\.apk");
-                                    break;
-                                case "microG":
-                                    break;
-                            }
-
-                            if (pattern != null) {
-                                Matcher matcher = pattern.matcher(name);
-                                if (matcher.find()) {
-                                    newestVersion = matcher.group(1);
-                                    downloadUrl = asset.getString("browser_download_url");
-                                    break outer;
-                                }
-                            }
-                        }
-                    }
-
-                } else if (responseCode == 403) {
-                    newestVersion = getString(R.string.unknown);
-                    fetchError = getString(R.string.fetch_error_rate_limit);
-                } else {
-                    newestVersion = getString(R.string.unknown);
-                    fetchError = getString(R.string.fetch_error_http, responseCode);
-                }
-
-            } catch (Exception e) {
-                e.printStackTrace();
-                newestVersion = getString(R.string.unknown);
-                fetchError = getString(R.string.fetch_error_network);
-            } finally {
-                if (connection != null) {
-                    connection.disconnect();
-                }
-            }
-
-            String finalVersion = newestVersion;
-            String finalDownloadUrl = downloadUrl;
-            String finalFetchError = fetchError;
+            LatestFetchState state = UpdateFetcher.fetchLatest(
+                    MainActivity.this,
+                    appName,
+                    preferredAbis,
+                    preferMicrogHuaweiBuild
+            );
             new Handler(Looper.getMainLooper()).post(() -> {
-                latestFetchStates.put(infoBox.displayName, new LatestFetchState(finalVersion, finalDownloadUrl, finalFetchError));
-                applyFetchStateToInfoBox(infoBox, finalVersion, finalDownloadUrl, finalFetchError);
+                latestFetchStates.put(infoBox.displayName, state);
+                applyFetchStateToInfoBox(infoBox, state.newestVersion, state.downloadUrl, state.fetchError);
                 if (onComplete != null) {
                     onComplete.run();
                 }
@@ -796,105 +634,11 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private String[] getPreferredApkAbis() {
-        if (emulatedArch != null && !"auto".equalsIgnoreCase(emulatedArch)) {
-            return new String[]{emulatedArch};
-        }
-        Set<String> preferred = new LinkedHashSet<>();
-        String[] supportedAbis = Build.SUPPORTED_ABIS;
-        if (supportedAbis != null) {
-            for (String abi : supportedAbis) {
-                if (abi == null) {
-                    continue;
-                }
-                String lower = abi.toLowerCase(Locale.ROOT);
-                if (lower.contains("arm64")) {
-                    preferred.add("arm64-v8a");
-                } else if (lower.contains("armeabi") || lower.contains("armv7") || lower.contains("arm-v7a")) {
-                    preferred.add("arm-v7a");
-                }
-            }
-        }
-        if (preferred.isEmpty()) {
-            preferred.add("arm64-v8a");
-            preferred.add("arm-v7a");
-        }
-        return preferred.toArray(new String[0]);
-    }
-
-    private ApkMatch findBestAbiAssetInRelease(JSONArray assets, String prefix, Pattern pattern, String[] preferredAbis) throws Exception {
-        Map<String, ApkMatch> matchesByAbi = new HashMap<>();
-        for (int j = 0; j < assets.length(); j++) {
-            JSONObject asset = assets.getJSONObject(j);
-            String name = asset.getString("name").toLowerCase();
-            if (!name.startsWith(prefix) || !name.endsWith(".apk")) {
-                continue;
-            }
-            Matcher matcher = pattern.matcher(name);
-            if (!matcher.find()) {
-                continue;
-            }
-            String version = matcher.group(1);
-            String abi = matcher.group(2);
-            String url = asset.getString("browser_download_url");
-            if (!matchesByAbi.containsKey(abi)) {
-                matchesByAbi.put(abi, new ApkMatch(version, url));
-            }
-        }
-
-        for (String abi : preferredAbis) {
-            ApkMatch match = matchesByAbi.get(abi);
-            if (match != null) {
-                return match;
-            }
-        }
-        return null;
+        return developerModeManager.getPreferredApkAbis();
     }
 
     private boolean shouldPreferMicrogHuaweiBuild() {
-        String effectiveBrand = getEffectiveBrand().toLowerCase(Locale.ROOT);
-        String manufacturer = Build.MANUFACTURER == null ? "" : Build.MANUFACTURER.toLowerCase(Locale.ROOT);
-        return effectiveBrand.contains("huawei")
-                || manufacturer.contains("huawei")
-                || effectiveBrand.contains("honor")
-                || manufacturer.contains("honor");
-    }
-
-    private String getEffectiveBrand() {
-        if (emulatedBrand != null && !"auto".equalsIgnoreCase(emulatedBrand)) {
-            return emulatedBrand;
-        }
-        return Build.BRAND == null ? "" : Build.BRAND;
-    }
-
-    private String findBestMicrogAssetInRelease(JSONArray assets, boolean preferHuaweiBuild) throws Exception {
-        String preferred = null;
-        String fallback = null;
-
-        for (int j = 0; j < assets.length(); j++) {
-            JSONObject asset = assets.getJSONObject(j);
-            String name = asset.getString("name").toLowerCase(Locale.ROOT);
-            if (!name.endsWith("-signed.apk")) {
-                continue;
-            }
-            boolean isHuaweiVariant = name.contains("-hw");
-            String url = asset.getString("browser_download_url");
-
-            if (preferHuaweiBuild) {
-                if (isHuaweiVariant && preferred == null) {
-                    preferred = url;
-                } else if (!isHuaweiVariant && fallback == null) {
-                    fallback = url;
-                }
-            } else {
-                if (!isHuaweiVariant && preferred == null) {
-                    preferred = url;
-                } else if (isHuaweiVariant && fallback == null) {
-                    fallback = url;
-                }
-            }
-        }
-
-        return preferred != null ? preferred : fallback;
+        return developerModeManager.shouldPreferMicrogHuaweiBuild();
     }
 
     private void applyCachedFetchState(AppInfoBox infoBox) {
@@ -922,77 +666,9 @@ public class MainActivity extends AppCompatActivity {
         } else {
             infoBox.tvNewestVersion.setTextColor(0xFF444444);
         }
-        if (activeDeveloperDiagnosticsView != null) {
-            activeDeveloperDiagnosticsView.setText(buildDeveloperDiagnosticsText());
-        }
+        developerModeManager.onDataChanged(appConfigs, appInfoBoxes, latestFetchStates);
     }
 
-    @NonNull
-    private static HttpURLConnection getHttpURLConnection(String appName) throws IOException {
-        String apiUrl = "https://api.github.com/repos/j-hc/revanced-magisk-module/releases";
-        if (appName.equals("microG")) {
-            apiUrl = "https://api.github.com/repos/ReVanced/GmsCore/releases";
-        }
-
-        HttpURLConnection connection = (HttpURLConnection) new URL(apiUrl).openConnection();
-        connection.setRequestMethod("GET");
-        connection.setRequestProperty("User-Agent", "ReVancedUpdater");
-        connection.setConnectTimeout(5000);
-        connection.setReadTimeout(5000);
-        return connection;
-    }
-
-    // Internal class to hold app information
-    private static class AppInfoBox {
-        TextView tvNewestVersion;
-        String installedVersion;
-        String newestVersion;
-        String apkUrl;
-        String fetchError;
-        String displayName;
-        String packageName;
-
-        AppInfoBox(TextView tvNewestVersion, String installedVersion, String displayName, String packageName) {
-            this.tvNewestVersion = tvNewestVersion;
-            this.installedVersion = installedVersion;
-            this.newestVersion = "-";
-            this.fetchError = null;
-            this.displayName = displayName;
-            this.packageName = packageName;
-        }
-    }
-
-    private static class LatestFetchState {
-        String newestVersion;
-        String downloadUrl;
-        String fetchError;
-
-        LatestFetchState(String newestVersion, String downloadUrl, String fetchError) {
-            this.newestVersion = newestVersion;
-            this.downloadUrl = downloadUrl;
-            this.fetchError = fetchError;
-        }
-    }
-
-    private static class ApkMatch {
-        String version;
-        String downloadUrl;
-
-        ApkMatch(String version, String downloadUrl) {
-            this.version = version;
-            this.downloadUrl = downloadUrl;
-        }
-    }
-
-    private static class AppConfig {
-        String displayName;
-        String packageName;
-
-        AppConfig(String displayName, String packageName) {
-            this.displayName = displayName;
-            this.packageName = packageName;
-        }
-    }
 
     private static String getInstalledVersion(PackageManager pm, String packageName) {
         if (packageName == null || packageName.trim().isEmpty()) {
@@ -1020,7 +696,7 @@ public class MainActivity extends AppCompatActivity {
         } catch (Exception e) {
             pendingReinstallPackageName = null;
             pendingReinstallDisplayName = null;
-            showFancyMessageDialog(getString(R.string.error_title), getString(R.string.uninstall_failed, e.getMessage()));
+            FancyDialogs.showMessageDialog(MainActivity.this, getString(R.string.error_title), getString(R.string.uninstall_failed, e.getMessage()));
         }
     }
 
@@ -1037,14 +713,14 @@ public class MainActivity extends AppCompatActivity {
         pendingReinstallDisplayName = null;
 
         if (infoBox == null || infoBox.apkUrl == null || infoBox.apkUrl.isEmpty()) {
-            showFancyMessageDialog(getString(R.string.app_name), getString(R.string.reinstall_not_ready));
+            FancyDialogs.showMessageDialog(MainActivity.this, getString(R.string.app_name), getString(R.string.reinstall_not_ready));
             return;
         }
         startApkInstall(infoBox);
     }
 
     private void promptFetchBeforeReinstall(AppInfoBox infoBox) {
-        showFancyMessageDialog(
+        FancyDialogs.showMessageDialog(MainActivity.this, 
                 infoBox.displayName,
                 getString(R.string.prepare_reinstall_prompt, infoBox.displayName),
                 R.string.ok,
@@ -1057,7 +733,7 @@ public class MainActivity extends AppCompatActivity {
 
                     fetchNewestVersion(infoBox.displayName, infoBox, () -> {
                         if (infoBox.apkUrl == null || infoBox.apkUrl.isEmpty()) {
-                            showFancyMessageDialog(
+                            FancyDialogs.showMessageDialog(MainActivity.this, 
                                     getString(R.string.app_name),
                                     infoBox.fetchError != null ? infoBox.fetchError : getString(R.string.reinstall_not_ready)
                             );
@@ -1112,191 +788,6 @@ public class MainActivity extends AppCompatActivity {
         return value.substring(0, 1).toUpperCase(Locale.ROOT) + value.substring(1);
     }
 
-    private void setupFancyDialogWindow(AlertDialog dialog) {
-        if (dialog.getWindow() == null) return;
-        dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-        int dialogWidth = (int) (getResources().getDisplayMetrics().widthPixels * 0.86f);
-        dialog.getWindow().setLayout(dialogWidth, ViewGroup.LayoutParams.WRAP_CONTENT);
-    }
-
-    private String buildDeveloperDiagnosticsText() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("[DEVICE]").append('\n');
-        sb.append(getString(R.string.developer_diag_emulated_brand, getEmulatedBrandLabel())).append('\n');
-        sb.append(getString(R.string.developer_diag_emulated_arch, getEmulatedArchLabel())).append('\n');
-        sb.append(getString(R.string.developer_diag_abis, formatPreferredAbis())).append('\n');
-        sb.append(getString(
-                R.string.developer_diag_microg,
-                getString(shouldPreferMicrogHuaweiBuild()
-                        ? R.string.developer_diag_microg_huawei
-                        : R.string.developer_diag_microg_standard)
-        ));
-        sb.append('\n').append('\n');
-        sb.append("[APPS]").append('\n');
-
-        for (AppConfig config : appConfigs) {
-            AppInfoBox info = appInfoBoxes.get(config.displayName);
-            LatestFetchState state = latestFetchStates.get(config.displayName);
-            String version = "-";
-            String urlValue = getString(R.string.developer_diag_not_checked);
-            if (info != null) {
-                version = info.newestVersion != null ? info.newestVersion : "-";
-                if (info.apkUrl != null && !info.apkUrl.isEmpty()) {
-                    urlValue = info.apkUrl;
-                } else if (info.newestVersion != null && !"-".equals(info.newestVersion)) {
-                    urlValue = "-";
-                }
-            } else if (state != null) {
-                version = state.newestVersion != null ? state.newestVersion : "-";
-                if (state.downloadUrl != null && !state.downloadUrl.isEmpty()) {
-                    urlValue = state.downloadUrl;
-                } else if (state.newestVersion != null && !"-".equals(state.newestVersion)) {
-                    urlValue = "-";
-                }
-            }
-            sb.append("- ")
-                    .append(config.displayName)
-                    .append('\n')
-                    .append("    v=")
-                    .append(version)
-                    .append('\n')
-                    .append("    url=")
-                    .append(urlValue)
-                    .append('\n');
-        }
-
-        return sb.toString();
-    }
-
-    private void showDeveloperModeDialog() {
-        View dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_developer_mode, null);
-        TextView tvDevDiag = dialogView.findViewById(R.id.tvDeveloperDiagnosticsContent);
-        Spinner spinnerBrand = dialogView.findViewById(R.id.spinnerDeveloperBrand);
-        Spinner spinnerArch = dialogView.findViewById(R.id.spinnerDeveloperArch);
-        MaterialButton btnDevCheckUpdates = dialogView.findViewById(R.id.btnDeveloperCheckUpdates);
-        MaterialButton btnDevClose = dialogView.findViewById(R.id.btnDeveloperClose);
-
-        final String[] brandValues = {"auto", "samsung", "honor", "huawei", "google"};
-        final String[] brandLabels = {
-                getString(R.string.developer_emulation_auto),
-                getString(R.string.developer_brand_samsung),
-                getString(R.string.developer_brand_honor),
-                getString(R.string.developer_brand_huawei),
-                getString(R.string.developer_brand_google)
-        };
-        ArrayAdapter<String> brandAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, brandLabels);
-        brandAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        spinnerBrand.setAdapter(brandAdapter);
-        spinnerBrand.setSelection(indexOfValue(brandValues, emulatedBrand));
-
-        final String[] archValues = {"auto", "arm64-v8a", "arm-v7a"};
-        final String[] archLabels = {
-                getString(R.string.developer_emulation_auto),
-                getString(R.string.developer_arch_arm64),
-                getString(R.string.developer_arch_armv7)
-        };
-        ArrayAdapter<String> archAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, archLabels);
-        archAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        spinnerArch.setAdapter(archAdapter);
-        spinnerArch.setSelection(indexOfValue(archValues, emulatedArch));
-
-        spinnerBrand.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                emulatedBrand = brandValues[position];
-                persistDeveloperEmulation();
-                tvDevDiag.setText(buildDeveloperDiagnosticsText());
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {
-            }
-        });
-        spinnerArch.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                emulatedArch = archValues[position];
-                persistDeveloperEmulation();
-                tvDevDiag.setText(buildDeveloperDiagnosticsText());
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {
-            }
-        });
-
-        activeDeveloperDiagnosticsView = tvDevDiag;
-        tvDevDiag.setText(buildDeveloperDiagnosticsText());
-
-        AlertDialog developerDialog = new AlertDialog.Builder(this)
-                .setView(dialogView)
-                .create();
-        developerDialog.setOnDismissListener(d -> activeDeveloperDiagnosticsView = null);
-
-        btnDevCheckUpdates.setOnClickListener(v -> {
-            checkUpdatesForAllApps();
-            tvDevDiag.setText(buildDeveloperDiagnosticsText());
-        });
-        btnDevClose.setOnClickListener(v -> developerDialog.dismiss());
-
-        developerDialog.show();
-        setupFancyDialogWindow(developerDialog);
-        if (developerDialog.getWindow() != null) {
-            int dialogWidth = (int) (getResources().getDisplayMetrics().widthPixels * 0.94f);
-            developerDialog.getWindow().setLayout(dialogWidth, ViewGroup.LayoutParams.WRAP_CONTENT);
-        }
-    }
-
-    private String formatPreferredAbis() {
-        String[] abis = getPreferredApkAbis();
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < abis.length; i++) {
-            if (i > 0) {
-                sb.append(", ");
-            }
-            sb.append(abis[i]);
-        }
-        return sb.toString();
-    }
-
-    private void persistDeveloperEmulation() {
-        getSharedPreferences(PREFS_NAME, MODE_PRIVATE)
-                .edit()
-                .putString(KEY_DEV_EMULATED_BRAND, emulatedBrand)
-                .putString(KEY_DEV_EMULATED_ARCH, emulatedArch)
-                .apply();
-    }
-
-    private int indexOfValue(String[] values, String selected) {
-        if (selected == null) return 0;
-        for (int i = 0; i < values.length; i++) {
-            if (values[i].equalsIgnoreCase(selected)) {
-                return i;
-            }
-        }
-        return 0;
-    }
-
-    private String getEmulatedBrandLabel() {
-        if ("samsung".equalsIgnoreCase(emulatedBrand)) return getString(R.string.developer_brand_samsung);
-        if ("honor".equalsIgnoreCase(emulatedBrand)) return getString(R.string.developer_brand_honor);
-        if ("huawei".equalsIgnoreCase(emulatedBrand)) return getString(R.string.developer_brand_huawei);
-        if ("google".equalsIgnoreCase(emulatedBrand)) return getString(R.string.developer_brand_google);
-        String realBrand = getEffectiveBrand();
-        if (realBrand == null || realBrand.trim().isEmpty()) {
-            realBrand = getString(R.string.unknown);
-        } else {
-            realBrand = capitalizeFirst(realBrand.trim());
-        }
-        return realBrand;
-    }
-
-    private String getEmulatedArchLabel() {
-        if ("arm64-v8a".equalsIgnoreCase(emulatedArch)) return getString(R.string.developer_arch_arm64);
-        if ("arm-v7a".equalsIgnoreCase(emulatedArch)) return getString(R.string.developer_arch_armv7);
-        return getDeviceArchitecture();
-    }
-
     private void checkUpdatesForSelectedApps() {
         for (AppInfoBox infoBox : appInfoBoxes.values()) {
             infoBox.newestVersion = "-";
@@ -1306,9 +797,7 @@ public class MainActivity extends AppCompatActivity {
             infoBox.tvNewestVersion.setTextColor(0xFF444444);
             fetchNewestVersion(infoBox.displayName, infoBox);
         }
-        if (activeDeveloperDiagnosticsView != null) {
-            activeDeveloperDiagnosticsView.setText(buildDeveloperDiagnosticsText());
-        }
+        developerModeManager.onDataChanged(appConfigs, appInfoBoxes, latestFetchStates);
     }
 
     private void checkUpdatesForAllApps() {
@@ -1327,93 +816,7 @@ public class MainActivity extends AppCompatActivity {
             }
             fetchNewestVersion(config.displayName, infoBox);
         }
-        if (activeDeveloperDiagnosticsView != null) {
-            activeDeveloperDiagnosticsView.setText(buildDeveloperDiagnosticsText());
-        }
-    }
-
-    private AlertDialog showFancyMessageDialog(CharSequence title, CharSequence message) {
-        return showFancyMessageDialog(title, message, R.string.ok, null, 0, null, true);
-    }
-
-    private AlertDialog showFancyMessageDialog(
-            CharSequence title,
-            CharSequence message,
-            int positiveTextRes,
-            @Nullable Runnable onPositive,
-            int negativeTextRes,
-            @Nullable Runnable onNegative,
-            boolean cancelable
-    ) {
-        View dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_fancy_selection, null);
-        TextView tvDialogTitle = dialogView.findViewById(R.id.tvDialogTitle);
-        FrameLayout dialogContentContainer = dialogView.findViewById(R.id.dialogContentContainer);
-        MaterialButton btnDialogPositive = dialogView.findViewById(R.id.btnDialogPositive);
-        MaterialButton btnDialogNegative = dialogView.findViewById(R.id.btnDialogNegative);
-
-        tvDialogTitle.setText(title);
-
-        TextView messageView = new TextView(this);
-        messageView.setText(message);
-        messageView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 15);
-        messageView.setLineSpacing(0f, 1.15f);
-        messageView.setTextColor(ContextCompat.getColor(this, R.color.btnTextColor));
-        dialogContentContainer.addView(messageView);
-
-        if (positiveTextRes != 0) {
-            btnDialogPositive.setText(positiveTextRes);
-        } else {
-            btnDialogPositive.setVisibility(View.GONE);
-        }
-
-        if (negativeTextRes != 0) {
-            btnDialogNegative.setText(negativeTextRes);
-        } else {
-            btnDialogNegative.setVisibility(View.GONE);
-        }
-
-        AlertDialog dialog = new AlertDialog.Builder(this)
-                .setView(dialogView)
-                .create();
-        dialog.setCancelable(cancelable);
-        dialog.setCanceledOnTouchOutside(cancelable);
-
-        btnDialogPositive.setOnClickListener(v -> {
-            if (onPositive != null) {
-                onPositive.run();
-            }
-            dialog.dismiss();
-        });
-        btnDialogNegative.setOnClickListener(v -> {
-            if (onNegative != null) {
-                onNegative.run();
-            }
-            dialog.dismiss();
-        });
-
-        dialog.show();
-        setupFancyDialogWindow(dialog);
-        return dialog;
-    }
-
-    private void showFancyContentDialog(CharSequence title, View content, int positiveTextRes) {
-        View dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_fancy_selection, null);
-        TextView tvDialogTitle = dialogView.findViewById(R.id.tvDialogTitle);
-        FrameLayout dialogContentContainer = dialogView.findViewById(R.id.dialogContentContainer);
-        MaterialButton btnDialogPositive = dialogView.findViewById(R.id.btnDialogPositive);
-        MaterialButton btnDialogNegative = dialogView.findViewById(R.id.btnDialogNegative);
-
-        tvDialogTitle.setText(title);
-        dialogContentContainer.addView(content);
-        btnDialogPositive.setText(positiveTextRes);
-        btnDialogNegative.setVisibility(View.GONE);
-
-        AlertDialog dialog = new AlertDialog.Builder(this)
-                .setView(dialogView)
-                .create();
-        btnDialogPositive.setOnClickListener(v -> dialog.dismiss());
-        dialog.show();
-        setupFancyDialogWindow(dialog);
+        developerModeManager.onDataChanged(appConfigs, appInfoBoxes, latestFetchStates);
     }
 
     private void showAppInfoDialog() {
@@ -1476,7 +879,7 @@ public class MainActivity extends AppCompatActivity {
             startActivity(intent);
         });
 
-        showFancyContentDialog(getString(R.string.app_info_title), content, R.string.dialog_ok);
+        FancyDialogs.showContentDialog(MainActivity.this, getString(R.string.app_info_title), content, R.string.dialog_ok);
     }
 }
 
