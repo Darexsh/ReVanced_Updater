@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <color name="ui_gray">#FF9AA5BA</color>
+    <color name="archInfoTextColor">#FF8FB7DA</color>
     <color name="boxStrokeColor">#808080</color>
+    <color name="headerBoxFillColor">#2F2F2F</color>
     <color name="btnTextColor">#FFFFFF</color>
     <color name="okButtonColor">#81C784</color>
     <color name="cancelButtonColor">#E57373</color>

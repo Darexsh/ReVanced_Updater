@@ -4,7 +4,7 @@
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="16dp"
+    android:padding="12dp"
     android:fitsSystemWindows="true">
 
     <ScrollView
@@ -13,21 +13,123 @@
         android:layout_weight="1">
 
         <LinearLayout
-            android:id="@+id/appContainer"
-            android:orientation="vertical"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:orientation="vertical"
             android:layout_marginStart="16dp"
-            android:layout_marginEnd="16dp"/>
+            android:layout_marginEnd="16dp">
+
+            <LinearLayout
+                android:id="@+id/headerBox"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginStart="8dp"
+                android:layout_marginEnd="8dp"
+                android:layout_marginTop="8dp"
+                android:layout_marginBottom="12dp"
+                android:padding="16dp"
+                android:background="@drawable/header_box_background">
+
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingEnd="4dp">
+
+                    <TextView
+                        android:id="@+id/tvHeaderTitle"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_centerHorizontal="true"
+                        android:text="@string/app_name"
+                        android:textSize="24sp"
+                        android:textStyle="bold"
+                        android:gravity="center_horizontal"
+                        android:paddingEnd="34dp"/>
+
+                    <TextView
+                        android:id="@+id/settingsInfoButton"
+                        android:layout_width="30dp"
+                        android:layout_height="30dp"
+                        android:layout_alignParentEnd="true"
+                        android:layout_alignParentTop="true"
+                        android:background="@drawable/round_icon_button"
+                        android:contentDescription="@string/settings_info_desc"
+                        android:gravity="center"
+                        android:text="i"
+                        android:textColor="#FFFFFFFF"
+                        android:textSize="18sp"
+                        android:textStyle="bold|italic"
+                        android:fontFamily="serif" />
+                </RelativeLayout>
+
+                <TextView
+                    android:id="@+id/tvHeaderSubtitle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/app_subtitle"
+                    android:textSize="14sp"
+                    android:gravity="center_horizontal"
+                    android:layout_marginTop="4dp"/>
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/appContainer"
+                android:orientation="vertical"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"/>
+
+            <TextView
+                android:id="@+id/tvNoAppsSelected"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:layout_marginEnd="16dp"
+                android:layout_marginTop="8dp"
+                android:gravity="center_horizontal"
+                android:text="@string/no_apps_selected"
+                android:textSize="15sp"
+                android:textStyle="italic"
+                android:visibility="gone" />
+
+            <TextView
+                android:id="@+id/tvDeviceModel"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:layout_marginEnd="16dp"
+                android:layout_marginTop="4dp"
+                android:gravity="center_horizontal"
+                android:textColor="@color/archInfoTextColor"
+                android:textSize="13sp"
+                android:textStyle="italic" />
+
+            <TextView
+                android:id="@+id/tvDeviceArch"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:layout_marginEnd="16dp"
+                android:layout_marginTop="2dp"
+                android:layout_marginBottom="6dp"
+                android:gravity="center_horizontal"
+                android:textColor="@color/archInfoTextColor"
+                android:textSize="13sp"
+                android:textStyle="italic" />
+
+        </LinearLayout>
     </ScrollView>
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btnCheckUpdates"
-        android:layout_width="300dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/check_updates"
         android:textColor="@color/btnTextColor"
-        android:layout_gravity="center"
+        android:layout_marginStart="24dp"
+        android:layout_marginEnd="24dp"
+        android:layout_marginTop="4dp"
         android:textAllCaps="false"
         style="@style/Widget.MaterialComponents.Button.OutlinedButton"
         app:cornerRadius="16dp"
@@ -35,11 +137,13 @@
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btnSelectApps"
-        android:layout_width="300dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/select_apps"
         android:textColor="@color/btnTextColor"
-        android:layout_gravity="center"
+        android:layout_marginStart="24dp"
+        android:layout_marginEnd="24dp"
+        android:layout_marginTop="8dp"
         android:textAllCaps="false"
         style="@style/Widget.MaterialComponents.Button.OutlinedButton"
         app:cornerRadius="16dp"
@@ -47,13 +151,15 @@
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btnChangeLanguage"
-        android:layout_width="300dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/change_language"
         android:textColor="@color/btnTextColor"
-        android:layout_gravity="center"
+        android:layout_marginStart="24dp"
+        android:layout_marginEnd="24dp"
+        android:layout_marginTop="8dp"
         android:textAllCaps="false"
-        android:layout_marginBottom="8dp"
+        android:layout_marginBottom="10dp"
         style="@style/Widget.MaterialComponents.Button.OutlinedButton"
         app:cornerRadius="16dp"
         app:strokeColor="@color/boxStrokeColor"/>
