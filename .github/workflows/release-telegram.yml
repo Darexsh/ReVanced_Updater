@@ -1,0 +1,70 @@
+name: Notify Telegram On Release
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+jobs:
+  telegram-notify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send Telegram notification
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          REPO: ${{ github.repository }}
+          RELEASE_NAME: ${{ github.event.release.name }}
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
+          RELEASE_URL: ${{ github.event.release.html_url }}
+          RELEASE_PRERELEASE: ${{ github.event.release.prerelease }}
+        run: |
+          set -euo pipefail
+
+          if [ -z "${TELEGRAM_BOT_TOKEN:-}" ] || [ -z "${TELEGRAM_CHAT_ID:-}" ]; then
+            echo "Missing TELEGRAM_BOT_TOKEN or TELEGRAM_CHAT_ID secret."
+            exit 1
+          fi
+
+          REPO_URL="https://github.com/${REPO}"
+          if [ -z "${RELEASE_URL:-}" ]; then
+            RELEASE_URL="${REPO_URL}/releases/latest"
+          fi
+
+          if [ "${RELEASE_PRERELEASE}" = "true" ]; then
+            RELEASE_TYPE="🟡 Pre-release"
+          else
+            RELEASE_TYPE="🟢 Stable release"
+          fi
+
+          VERSION="${RELEASE_NAME:-$RELEASE_TAG}"
+          if [ -z "${VERSION:-}" ]; then
+            VERSION="manual test"
+          fi
+
+          DOWNLOAD_URL="$(jq -r '
+            .release.assets
+            | map(.browser_download_url // "")
+            | map(select(test("\\.apk(\\?|$)"; "i")))
+            | .[0] // empty
+          ' "${GITHUB_EVENT_PATH}")"
+          if [ -z "${DOWNLOAD_URL:-}" ]; then
+            DOWNLOAD_URL="${RELEASE_URL}"
+          fi
+
+          TEXT="$(printf '🚀 <b>New GitHub Release</b>\nRepository: <b>%s</b>\nVersion: <b>%s</b>\nType: %s\n\n🔗 %s' \
+            "${REPO}" \
+            "${VERSION}" \
+            "${RELEASE_TYPE}" \
+            "${RELEASE_URL}")"
+
+          REPLY_MARKUP="$(printf '{"inline_keyboard":[[{"text":"Open on GitHub","url":"%s"},{"text":"Download latest release","url":"%s"}]]}' \
+            "${REPO_URL}" \
+            "${DOWNLOAD_URL}")"
+
+          curl -sS -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
+            -d "chat_id=${TELEGRAM_CHAT_ID}" \
+            --data-urlencode "text=${TEXT}" \
+            -d "parse_mode=HTML" \
+            --data-urlencode "reply_markup=${REPLY_MARKUP}" \
+            -d "disable_web_page_preview=true"
